@@ -1,6 +1,3 @@
 /rmd-prerendered.html
 /rmd-prerendered_files
-/renv
-renv.lock
 .Rproj.user/
-.Rprofile
