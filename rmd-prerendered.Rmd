@@ -1,0 +1,122 @@
+---
+title: "rmarkdown-prerender-test"
+author: "Mike Baynton"
+date: "2026-02-26"
+runtime: shiny_prerendered
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float:
+      collapsed: true
+    theme: journal
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+data('HairEyeColor')
+```
+
+## Hair and Eye Color
+
+```{r libraries, include=FALSE}
+library(ggplot2)
+library(shiny)
+```
+
+### Sex Distribution
+
+```{r pie-sex}
+Sys.sleep(15)
+sex_counts <- margin.table(HairEyeColor, 3)
+sex_df <- data.frame(Sex = names(sex_counts), Count = as.numeric(sex_counts))
+
+ggplot(sex_df, aes(x = "", y = Count, fill = Sex)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "Distribution by Sex") +
+  theme_void()
+```
+
+### Eye Color Distribution
+
+```{r pie-eye}
+eye_counts <- margin.table(HairEyeColor, 2)
+eye_df <- data.frame(Eye = names(eye_counts), Count = as.numeric(eye_counts))
+
+ggplot(eye_df, aes(x = "", y = Count, fill = Eye)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_manual(values = c(Blue = "#5b8dd9", Brown = "#7B4F2E", Green = "#4aab63", Hazel = "#b5813a")) +
+  labs(title = "Distribution by Eye Color") +
+  theme_void()
+```
+
+### Hair Color Distribution
+
+```{r pie-hair}
+hair_counts <- margin.table(HairEyeColor, 1)
+hair_df <- data.frame(Hair = names(hair_counts), Count = as.numeric(hair_counts))
+
+ggplot(hair_df, aes(x = "", y = Count, fill = Hair)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_manual(values = c(Black = "#1a1a1a", Blond = "#f5d060", Brown = "#7B4F2E", Red = "#c0392b")) +
+  labs(title = "Distribution by Hair Color") +
+  theme_void()
+```
+
+## Filter by Sex
+
+```{r filter-input, context="render", echo=FALSE}
+selectInput(
+  "sex_filter",
+  label    = "Select Sex:",
+  choices  = c("Male", "Female"),
+  selected = "Male"
+)
+```
+
+### Eye Color (Filtered)
+
+```{r eye-filtered-output, echo=FALSE}
+plotOutput("eye_filtered_plot")
+```
+
+### Hair Color (Filtered)
+
+```{r hair-filtered-output, echo=FALSE}
+plotOutput("hair_filtered_plot")
+```
+
+```{r server, context="server", echo=FALSE}
+filtered_data <- reactive({
+  sex <- input$sex_filter
+  tbl <- HairEyeColor[, , sex]
+  tbl
+})
+
+output$eye_filtered_plot <- renderPlot({
+  eye_counts <- colSums(filtered_data())
+  eye_df <- data.frame(Eye = names(eye_counts), Count = as.numeric(eye_counts))
+
+  ggplot(eye_df, aes(x = "", y = Count, fill = Eye)) +
+    geom_col(width = 1) +
+    coord_polar(theta = "y") +
+    scale_fill_manual(values = c(Blue = "#5b8dd9", Brown = "#7B4F2E", Green = "#4aab63", Hazel = "#b5813a")) +
+    labs(title = paste("Eye Color Distribution —", input$sex_filter)) +
+    theme_void()
+})
+
+output$hair_filtered_plot <- renderPlot({
+  hair_counts <- rowSums(filtered_data())
+  hair_df <- data.frame(Hair = names(hair_counts), Count = as.numeric(hair_counts))
+
+  ggplot(hair_df, aes(x = "", y = Count, fill = Hair)) +
+    geom_col(width = 1) +
+    coord_polar(theta = "y") +
+    scale_fill_manual(values = c(Black = "#1a1a1a", Blond = "#f5d060", Brown = "#7B4F2E", Red = "#c0392b")) +
+    labs(title = paste("Hair Color Distribution —", input$sex_filter)) +
+    theme_void()
+})
+```
