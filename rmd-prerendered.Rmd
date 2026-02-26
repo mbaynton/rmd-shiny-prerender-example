@@ -13,16 +13,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(ggplot2)
+library(shiny)
 knitr::opts_chunk$set(echo = TRUE)
 data('HairEyeColor')
 ```
 
 ## Hair and Eye Color
-
-```{r libraries, include=FALSE}
-library(ggplot2)
-library(shiny)
-```
 
 ### Sex Distribution
 
